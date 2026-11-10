@@ -1,0 +1,284 @@
+{
+  "name": "zovo-excel-compare",
+  "displayName": "Excel Compare & XLSX Diff (Compare Excel Files, CSV Diff, Spreadsheet Compare)",
+  "description": "Excel compare for VS Code: compare two Excel files (.xlsx, .xlsm, .xls, .ods) or CSV files cell by cell. Inserted rows are aligned, changed cells are marked, and you can step from change to change or compare a file with its Git HEAD version. Values or formulas. No network.",
+  "version": "0.1.0",
+  "publisher": "zovo",
+  "license": "MIT",
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#12352A",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/theluckystrike/excel-compare-vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/theluckystrike/excel-compare-vscode/issues"
+  },
+  "homepage": "https://github.com/theluckystrike/excel-compare-vscode#readme",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Data Science",
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "excel compare",
+    "xlsx diff",
+    "excel diff",
+    "compare excel",
+    "compare excel files",
+    "csv diff",
+    "csv compare",
+    "spreadsheet compare",
+    "spreadsheet diff",
+    "xlsx compare",
+    "excel diff viewer",
+    "excel compare tool",
+    "xlsx",
+    "excel",
+    "csv",
+    "diff",
+    "compare",
+    "git diff excel",
+    "ods",
+    "xls",
+    "workbook compare",
+    "table diff",
+    "data diff",
+    "row diff",
+    "cell diff"
+  ],
+  "main": "./src/extension.js",
+  "activationEvents": [],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": true
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "excelCompare.compareSelected",
+        "title": "Compare Selected Excel Files",
+        "category": "Excel Compare",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "excelCompare.compareWith",
+        "title": "Compare with...",
+        "category": "Excel Compare",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "excelCompare.compareFiles",
+        "title": "Compare Two Excel or CSV Files...",
+        "category": "Excel Compare"
+      },
+      {
+        "command": "excelCompare.compareWithHead",
+        "title": "Compare with Git HEAD",
+        "category": "Excel Compare",
+        "icon": "$(git-compare)"
+      },
+      {
+        "command": "excelCompare.openSample",
+        "title": "Open the sample comparison",
+        "category": "Excel Compare"
+      },
+      {
+        "command": "excelCompare.openWalkthrough",
+        "title": "Get started",
+        "category": "Excel Compare"
+      },
+      {
+        "command": "excelCompare.exportReport",
+        "title": "Export a diff report (XLSX, HTML or CSV) (Pro)",
+        "category": "Excel Compare"
+      },
+      {
+        "command": "excelCompare.matchByKey",
+        "title": "Match rows by key columns (Pro)",
+        "category": "Excel Compare"
+      },
+      {
+        "command": "excelCompare.compareFolders",
+        "title": "Compare two folders of workbooks (Pro)",
+        "category": "Excel Compare"
+      },
+      {
+        "command": "excelCompare.supportDeveloper",
+        "title": "Support the developer",
+        "category": "Excel Compare"
+      },
+      {
+        "command": "excelCompare.moreViewers",
+        "title": "More free viewers",
+        "category": "Excel Compare"
+      },
+      {
+        "command": "excelCompare.getPro",
+        "title": "Get Zovo Pro (USD 19 once, all 22 Zovo extensions)",
+        "category": "Zovo Pro"
+      },
+      {
+        "command": "excelCompare.payWithPayPal",
+        "title": "Pay for Zovo Pro with PayPal (USD 19, team of 5 USD 59)",
+        "category": "Zovo Pro"
+      },
+      {
+        "command": "excelCompare.unlockWithSponsors",
+        "title": "I already paid: unlock with GitHub Sponsors",
+        "category": "Zovo Pro"
+      },
+      {
+        "command": "excelCompare.enterLicenseKey",
+        "title": "Enter Zovo Pro license key",
+        "category": "Zovo Pro"
+      },
+      {
+        "command": "excelCompare.removeLicense",
+        "title": "Remove Zovo Pro from this editor",
+        "category": "Zovo Pro"
+      },
+      {
+        "command": "excelCompare.payByCard",
+        "title": "Pay for Zovo Pro by card (USD 19)",
+        "category": "Zovo Pro"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "excelCompare.compareSelected",
+          "when": "listMultiSelection && !explorerResourceIsFolder && resourceExtname =~ /^\\.(xlsx|xlsm|xls|ods|csv|tsv)$/i",
+          "group": "3_compare@40"
+        },
+        {
+          "command": "excelCompare.compareWith",
+          "when": "!listMultiSelection && !explorerResourceIsFolder && resourceExtname =~ /^\\.(xlsx|xlsm|xls|ods|csv|tsv)$/i",
+          "group": "3_compare@41"
+        },
+        {
+          "command": "excelCompare.compareWithHead",
+          "when": "!listMultiSelection && !explorerResourceIsFolder && resourceExtname =~ /^\\.(xlsx|xlsm|xls|ods|csv|tsv)$/i",
+          "group": "3_compare@42"
+        },
+        {
+          "command": "excelCompare.compareFolders",
+          "when": "listMultiSelection && explorerResourceIsFolder && config.excelCompare.showProTools",
+          "group": "3_compare@43"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "excelCompare.compareSelected",
+          "when": "false"
+        },
+        {
+          "command": "excelCompare.exportReport",
+          "when": "config.excelCompare.showProTools"
+        },
+        {
+          "command": "excelCompare.matchByKey",
+          "when": "config.excelCompare.showProTools"
+        },
+        {
+          "command": "excelCompare.compareFolders",
+          "when": "config.excelCompare.showProTools"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Excel Compare",
+      "properties": {
+        "excelCompare.maxFileSizeMB": {
+          "type": "number",
+          "default": 200,
+          "minimum": 1,
+          "maximum": 2000,
+          "description": "Largest file that is compared, in MB. Workbooks must also inflate to less than 600 MB."
+        },
+        "excelCompare.maxRows": {
+          "type": "number",
+          "default": 300000,
+          "minimum": 1000,
+          "maximum": 1000000,
+          "description": "Rows read per sheet. A longer sheet is compared up to this row, with a note."
+        },
+        "excelCompare.showProTools": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the Export report, Match by key and Compare folders buttons (Zovo Pro tools, 3 free tries each). Turn off to hide them."
+        },
+        "excelCompare.showSupportLinks": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the small Rate, More free viewers and support links at the bottom of the comparison."
+        },
+        "excelCompare.askForRating": {
+          "type": "boolean",
+          "default": true,
+          "description": "Ask once, after a few days of use, whether you want to rate the extension. Never after an error."
+        }
+      }
+    },
+    "walkthroughs": [
+      {
+        "id": "excelCompare.start",
+        "title": "Excel Compare & XLSX Diff",
+        "description": "Compare two Excel or CSV files and see each changed cell, row and sheet.",
+        "steps": [
+          {
+            "id": "compare",
+            "title": "Compare two files",
+            "description": "Select two .xlsx, .xls, .ods or .csv files in the Explorer, right-click and pick Compare Selected Excel Files. With one file, pick Compare with... and choose the other one.\n[Open the sample comparison](command:excelCompare.openSample)\n[Compare two files...](command:excelCompare.compareFiles)",
+            "media": {
+              "markdown": "walkthrough/compare.md"
+            }
+          },
+          {
+            "id": "changes",
+            "title": "Step through the changes",
+            "description": "Changed cells are yellow, added rows green and removed rows red. Next and Previous jump from change to change, and Values or Formulas decides what is compared.\n[Open the sample comparison](command:excelCompare.openSample)",
+            "media": {
+              "markdown": "walkthrough/changes.md"
+            }
+          },
+          {
+            "id": "git",
+            "title": "Compare with Git HEAD",
+            "description": "Right-click a workbook in a Git repository and pick Compare with Git HEAD to see what changed since the last commit.\n[Compare a file with Git HEAD...](command:excelCompare.compareWithHead)",
+            "media": {
+              "markdown": "walkthrough/git.md"
+            }
+          },
+          {
+            "id": "zovo-related",
+            "title": "Files that often come with spreadsheets",
+            "description": "If your project also has spreadsheets and CSV files or SQLite databases, these free Zovo extensions open them. A link opens the extension page, and you choose there whether to install it.\n[XLSX and CSV Viewer](command:extension.open?%5B%22zovo.table-viewer-vscode%22%5D)\n[SQLite Viewer](command:extension.open?%5B%22zovo.sqlite-table-viewer%22%5D)",
+            "media": {
+              "markdown": "walkthrough/related.md"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "test": "node scripts/test.js",
+    "build": "node scripts/build.js",
+    "samples": "node scripts/make_samples.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "~1.90.0"
+  },
+  "sponsor": {
+    "url": "https://github.com/sponsors/theluckystrike/sponsorships?tier_id=679878"
+  }
+}

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <rect width="256" height="256" rx="44" fill="#12352A"/>
+  <!-- first sheet (back) -->
+  <rect x="30" y="40" width="120" height="132" rx="12" fill="#17463A" stroke="#4FD1A1" stroke-width="6" opacity=".75"/>
+  <rect x="30" y="40" width="120" height="28" rx="12" fill="#4FD1A1" opacity=".75"/>
+  <rect x="30" y="56" width="120" height="12" fill="#4FD1A1" opacity=".75"/>
+  <!-- second sheet (front) -->
+  <rect x="96" y="84" width="130" height="140" rx="12" fill="#1B5444" stroke="#4FD1A1" stroke-width="6"/>
+  <rect x="96" y="84" width="130" height="30" rx="12" fill="#4FD1A1"/>
+  <rect x="96" y="100" width="130" height="14" fill="#4FD1A1"/>
+  <line x1="139" y1="114" x2="139" y2="224" stroke="#4FD1A1" stroke-width="4" opacity=".7"/>
+  <line x1="183" y1="114" x2="183" y2="224" stroke="#4FD1A1" stroke-width="4" opacity=".7"/>
+  <line x1="96" y1="150" x2="226" y2="150" stroke="#4FD1A1" stroke-width="4" opacity=".5"/>
+  <line x1="96" y1="187" x2="226" y2="187" stroke="#4FD1A1" stroke-width="4" opacity=".5"/>
+  <!-- changed, added, removed cells -->
+  <rect x="143" y="118" width="36" height="28" rx="3" fill="#F5B841"/>
+  <rect x="187" y="154" width="35" height="29" rx="3" fill="#5BD47A"/>
+  <rect x="100" y="191" width="35" height="29" rx="3" fill="#F2726B"/>
+  <!-- compare arrows -->
+  <path d="M44 196 h36 m-12 -12 l12 12 l-12 12" fill="none" stroke="#F5B841" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

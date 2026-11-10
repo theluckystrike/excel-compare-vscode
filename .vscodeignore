@@ -1,0 +1,13 @@
+test/**
+scripts/**
+.github/**
+icon.svg
+node_modules/**
+dist/*.vsix
+*.vsix
+.gitignore
+.vscodeignore
+src/worker.js
+src/core/**
+**/*.bak-*
+**/*.map
