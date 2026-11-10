@@ -1,5 +1,7 @@
 # Excel Compare & XLSX Diff (Compare Excel Files, CSV Diff, Spreadsheet Compare)
 
+Zovo Pro: USD 19 once, every Zovo tool. The diff report export, Match rows by key and Compare two folders are Pro, with 3 free tries each; comparing two files stays free.
+
 Excel compare for VS Code. Compare two Excel workbooks or CSV files cell by cell and see which rows were added or removed, which cells changed, and which sheets exist in only one file. Compare a workbook with its Git HEAD version before you commit.
 
 ![Two budget workbooks compared: a changed amount in yellow with the old value struck through, an inserted row in green, a new Owner column](images/compare.png)

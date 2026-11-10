@@ -9,4 +9,5 @@
 - Changed, added and removed cells and rows in colour, next and previous change, counts per sheet, values or formulas.
 - Grid that only draws the rows on screen, for sheets with hundreds of thousands of rows. Limits on file size, inflate size, rows and columns, each with a note when it applies.
 - Zovo Pro tools (3 free tries each): export a diff report (XLSX with coloured cells, HTML or CSV), match rows by key columns with moved rows, compare two folders of workbooks.
+- A Pro tool uses no free try when nothing differs: no report for two files that are the same, no try for a key match with no change, or for two folders whose files are all the same.
 - No network and no telemetry.

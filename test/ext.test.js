@@ -189,6 +189,51 @@ test('Pro folders: pairs by name, a summary row for each, any pair opens; one tr
   } finally { s.restore(); }
 });
 
+test('Pro tools on comparisons with no change use no try: report (same file, blank workbooks, empty CSVs), key match, folders of identical pairs', async () => {
+  const SAME = file('same-copy.xlsx', fs.readFileSync(A));
+  const BL1 = file('blank1.xlsx', book([['Sheet', []]])), BL2 = file('blank2.xlsx', book([['Sheet', []]]));
+  const E1 = file('empty1.csv', ''), E2 = file('empty2.csv', '');
+  const s = loadExtension();
+  try {
+    s.ext.activate(s.context);
+    for (const [a, b] of [[A, SAME], [BL1, BL2], [E1, E2]]) {
+      const p = await openCompare(s, a, b);
+      const out = path.join(dir, `none-${path.basename(a)}.csv`);
+      s.ui.quick.push((items) => items[2]); s.ui.save.push(s.vscode.Uri.file(out));
+      const n = s.log.info.length;
+      await p.send({ type: 'tool', tool: 'report' });
+      assert.ok(!fs.existsSync(out), `no report file for ${path.basename(a)}`);
+      assert.ok(s.log.info.slice(n).some((m) => m.text === 'The two files are the same (values compared), so there is no change to report. No free try was used.'), JSON.stringify(s.log.info.slice(n)));
+      assert.strictEqual(tries(s).report, undefined, 'no report try');
+      s.ui.quick.length = 0; s.ui.save.length = 0;
+    }
+    // key match on two equal sheets: the comparison re-runs by key, nothing differs, no try
+    const p = await openCompare(s, A, file('same-copy2.xlsx', fs.readFileSync(A)));
+    s.ui.quick.push((items) => [items.find((x) => x.description === 'ID')]);
+    const n = s.log.info.length;
+    await p.send({ type: 'tool', tool: 'key', sheet: 0 });
+    assert.strictEqual(last(p, 'result').keyed, true);
+    assert.ok(s.log.info.slice(n).some((m) => /^Matched by key, the rows of "Stock" are the same in both files\. No free try was used\.$/.test(m.text)), JSON.stringify(s.log.info.slice(n)));
+    assert.strictEqual(tries(s).key, undefined, 'no key try');
+    // folders where every pair is the same and no file is on one side only
+    const ga = path.join(dir, 'ga'), gb = path.join(dir, 'gb');
+    fs.mkdirSync(ga, { recursive: true }); fs.mkdirSync(gb, { recursive: true });
+    fs.copyFileSync(A, path.join(ga, 'stock.xlsx')); fs.copyFileSync(A, path.join(gb, 'stock.xlsx'));
+    fs.writeFileSync(path.join(ga, 'x.csv'), 'a,b\n1,2\n'); fs.writeFileSync(path.join(gb, 'x.csv'), 'a,b\n1,2\n');
+    const U = s.vscode.Uri;
+    const before = s.panels.length;
+    const run = s.vscode.commands.executeCommand('excelCompare.compareFolders', U.file(ga), [U.file(ga), U.file(gb)]);
+    for (let i = 0; i < 50 && s.panels.length === before; i++) await new Promise((r) => setTimeout(r, 20));
+    const fp = s.panels.at(-1);
+    const m = s.log.info.length;
+    await fp.send({ type: 'ready' });
+    await run;
+    assert.deepStrictEqual(last(fp, 'folder').rows.map((r) => r.status), ['same', 'same']);
+    assert.ok(s.log.info.slice(m).some((x) => x.text === 'All 2 file pairs are the same (values compared). No free try was used.'), JSON.stringify(s.log.info.slice(m)));
+    assert.strictEqual(tries(s).folders, undefined, 'no folders try');
+  } finally { s.restore(); }
+});
+
 test('showProTools off: the panel gets show=false; the CSP has a nonce and no unsafe-inline or remote origin', async () => {
   const s = loadExtension();
   try {

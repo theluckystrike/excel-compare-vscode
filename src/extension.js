@@ -255,10 +255,18 @@ async function runTool(tool, from, sheet) {
   return undefined;
 }
 
+/** Nothing differs in a comparison result (the same test as identical() in src/core/diff.js, which runs in the worker). */
+function noChange(res) {
+  const t = (res && res.totals) || {};
+  return !!res && !res.sheetsOnlyA && !res.sheetsOnlyB && !t.changed && !t.added && !t.removed && !t.moved && !t.colsAdded && !t.colsRemoved;
+}
+const noCounts = (c) => !c || !(c.changed || c.added || c.removed || c.moved || c.colsAdded || c.colsRemoved);
+
 async function exportReport(from) {
   if (!(await pro.allowed('report'))) return;
   const s = from && from.data ? from : await sessionOrPick('Export a report of which comparison?');
   if (!s || !s.data) return;
+  if (noChange(s.data.res)) { vscode.window.showInformationMessage('The two files are the same (values compared), so there is no change to report. No free try was used.'); return; }
   const kind = await vscode.window.showQuickPick([
     { label: 'XLSX workbook', description: 'changed, added and removed cells filled in colour, with Summary and Changes sheets', kind: 'xlsx' },
     { label: 'HTML page', description: 'one file you can open in a browser or attach', kind: 'html' },
@@ -305,7 +313,11 @@ async function matchByKey(from, sheet) {
   if (!picks || !picks.length) return; // Escape: no try used
   s.keys = { ...(s.keys || {}), [d.ia]: picks.map((p) => p.col) };
   const ok = await s.run();
-  if (ok) { await pro.produced('key'); refreshPro(); s.panel && s.panel.reveal(); }
+  if (!ok) return;
+  s.panel && s.panel.reveal();
+  const after = s.data && s.data.res.sheets.find((x) => x.ia === d.ia && x.status === 'both');
+  if (after && noCounts(after.counts)) { vscode.window.showInformationMessage(`Matched by key, the rows of "${d.nameB}" are the same in both files. No free try was used.`); return; }
+  await pro.produced('key'); refreshPro();
 }
 
 /** Workbook and CSV files under a folder: { rel -> fsPath }, at most 2,000 files and 20,000 entries looked at. */
@@ -380,7 +392,7 @@ async function compareFolders(dirA, dirB) {
   panel.onDidDispose(() => { closed = true; });
   await ready;
   await send(false);
-  let compared = 0;
+  let compared = 0, differ = 0;
   await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Comparing folders', cancellable: true }, async (progress, token) => {
     for (let i = 0; i < pairs.length && !closed && !token.isCancellationRequested; i++) {
       const p = pairs[i];
@@ -390,12 +402,15 @@ async function compareFolders(dirA, dirB) {
         const r = await runJob({ op: 'summary', a: { file: p.a, name: path.basename(p.a) }, b: { file: p.b, name: path.basename(p.b) }, opts: {}, limits: limits() }, { idleMs: 60000 });
         Object.assign(rows[i], { status: r.same ? 'same' : 'different', totals: r.totals, sheetsOnlyA: r.sheetsOnlyA, sheetsOnlyB: r.sheetsOnlyB });
         compared++;
+        if (!r.same) differ++;
       } catch (e) { Object.assign(rows[i], { status: 'error', error: String(e.message || e).slice(0, 200) }); }
       if (i % 5 === 0) await send(false);
     }
   });
   if (closed) return;
   await send(true);
+  const oneSided = pairs.filter((p) => !p.a || !p.b).length;
+  if (compared && !differ && !oneSided) { vscode.window.showInformationMessage(`All ${compared} file pair${compared === 1 ? ' is' : 's are'} the same (values compared). No free try was used.`); return; }
   if (compared && !counted) { counted = true; await pro.produced('folders'); refreshPro(); }
 }
 
