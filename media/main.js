@@ -47,7 +47,7 @@
     const tip = (name, f) => (S.pro.licensed ? `${name} (Zovo Pro)` : `${name} (Zovo Pro tool, ${t[f] === undefined ? 3 : t[f]} free ${t[f] === 1 ? 'try' : 'tries'} left)`);
     return h('span', { class: 'pro' },
       h('button', { class: 'btn', 'data-tool': 'report', title: tip('Export a diff report: XLSX with coloured cells, HTML or CSV', 'report'), onclick: () => post({ type: 'tool', tool: 'report' }), text: 'Export report' }),
-      S.meta ? h('button', { class: 'btn', 'data-tool': 'key', title: tip('Match rows by key columns, such as an ID, instead of by order', 'key'), onclick: () => post({ type: 'tool', tool: 'key' }), text: 'Match by key' }) : null,
+      S.meta ? h('button', { class: 'btn', 'data-tool': 'key', title: tip('Match rows by key columns, such as an ID, instead of by order', 'key'), onclick: () => post({ type: 'tool', tool: 'key', sheet: S.sheet }), text: 'Match by key' }) : null,
       h('button', { class: 'btn', 'data-tool': 'folders', title: tip('Compare two folders of workbooks', 'folders'), onclick: () => post({ type: 'tool', tool: 'folders' }), text: 'Compare folders' }));
   }
 
@@ -189,7 +189,7 @@
     if (!S.pos) return;
     if (!d) { S.pos.textContent = ''; return; }
     const k = S.cur[S.sheet];
-    S.pos.textContent = d.chg.length ? (k === undefined ? `${fmt(d.chg.length)} changes` : `Change ${fmt(k + 1)} of ${fmt(d.chg.length)}`) : 'No changes';
+    S.pos.textContent = d.chg.length ? (k === undefined ? plural(d.chg.length, 'change') : `Change ${fmt(k + 1)} of ${fmt(d.chg.length)}`) : 'No changes';
   }
 
   /** Next or previous change; at the end of a sheet it goes on in the next sheet with changes. */

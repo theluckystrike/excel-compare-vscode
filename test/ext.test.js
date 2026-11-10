@@ -152,7 +152,7 @@ test('Pro key match: Escape on the column pick keeps the try; a keyed comparison
     await p.send({ type: 'tool', tool: 'key' });
     assert.strictEqual(tries(s).key, undefined);
     s.ui.quick.push((items) => [items.find((x) => x.description === 'ID')]);
-    await p.send({ type: 'tool', tool: 'key' });
+    await p.send({ type: 'tool', tool: 'key', sheet: 0 }); // the sheet on screen: no sheet pick
     const r = last(p, 'result');
     assert.strictEqual(r.keyed, true);
     assert.deepStrictEqual(r.sheets[0].keys, [0]);

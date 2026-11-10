@@ -156,7 +156,7 @@ class Compare {
         if (!side || side.bytes) return undefined;
         return vscode.commands.executeCommand('revealInExplorer', side.uri).then(undefined, () => undefined);
       }
-      case 'tool': return runTool(String(msg.tool), this);
+      case 'tool': return runTool(String(msg.tool), this, Number.isSafeInteger(msg.sheet) ? msg.sheet : undefined);
       case 'copy': return vscode.env.clipboard.writeText(String(msg.text || '').slice(0, 1 << 20)).then(() => vscode.window.setStatusBarMessage('Copied.', 3000));
       case 'settings': return vscode.commands.executeCommand('workbench.action.openSettings', `@ext:${EXT_ID}`);
       default: return undefined;
@@ -248,9 +248,9 @@ async function sessionOrPick(title) {
   return null;
 }
 
-async function runTool(tool, from) {
+async function runTool(tool, from, sheet) {
   if (tool === 'report') return exportReport(from);
-  if (tool === 'key') return matchByKey(from);
+  if (tool === 'key') return matchByKey(from, sheet);
   if (tool === 'folders') return compareFolders();
   return undefined;
 }
@@ -278,11 +278,13 @@ async function exportReport(from) {
   await vscode.workspace.fs.writeFile(target, bytes);
   await pro.produced('report');
   refreshPro();
+  // the status bar shows the free-try count (pro.produced); a CSV report also opens beside the comparison
   if (kind.kind === 'csv') await vscode.window.showTextDocument(target, { preview: false, viewColumn: vscode.ViewColumn.Beside });
-  else vscode.window.setStatusBarMessage(`Excel Compare: saved ${path.basename(target.path)} (${bytes.length.toLocaleString('en-US')} bytes).`, 10000);
+  else if (pro.licensed) vscode.window.setStatusBarMessage(`Excel Compare: saved ${path.basename(target.path)} (${bytes.length.toLocaleString('en-US')} bytes).`, 10000);
 }
 
-async function matchByKey(from) {
+/** sheet: index of the sheet comparison on screen (from the webview); that sheet is used when it is in both files. */
+async function matchByKey(from, sheet) {
   if (!(await pro.allowed('key'))) return;
   const s = from && from.data ? from : await sessionOrPick('Match rows by key in which comparison?');
   if (!s || !s.data) return;
@@ -290,7 +292,9 @@ async function matchByKey(from) {
   const both = res.sheets.filter((d) => d.status === 'both');
   if (!both.length) { vscode.window.showInformationMessage('No sheet is in both files, so there is nothing to match.'); return; }
   let d = both[0];
-  if (both.length > 1) {
+  const shown = Number.isSafeInteger(sheet) ? res.sheets[sheet] : null;
+  if (shown && shown.status === 'both') d = shown;
+  else if (both.length > 1) {
     const p = await vscode.window.showQuickPick(both.map((x) => ({ label: x.nameB, description: x.nameA !== x.nameB ? `first file: ${x.nameA}` : '', d: x })), { title: 'Match rows by key: which sheet?' });
     if (!p) return;
     d = p.d;
