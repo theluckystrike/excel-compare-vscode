@@ -73,3 +73,6 @@ h2 { font-size: 15px; margin: 8px 0; }
 .fr.onlyA .st, .fr.error .st { color: var(--vscode-gitDecoration-deletedResourceForeground, #f85149); }
 .fr.onlyB .st { color: var(--vscode-gitDecoration-addedResourceForeground, #3fb950); }
 .zovo-support { flex: none; margin-top: 4px; }
+
+/* REACH1 Pro row: its own full-width line under the toolbar buttons */
+.top > .zovo-reach1 { flex: 1 0 100%; margin: 0; }

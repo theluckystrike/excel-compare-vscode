@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.1 (2026-11-12)
+
+- First Marketplace release. Comparing two Excel or CSV files, Git HEAD compare, Values or Formulas and every view feature stay free.
+- Zovo Pro tools, 3 free tries each on this computer: Export a diff report, Match rows by key columns, Compare two folders of workbooks. A small Pro tools row in the comparison toolbar shows the tries left, with Get Zovo Pro and a × that hides it until VS Code restarts. It is not shown with Zovo Pro or when excelCompare.showProTools is off.
+- Right-click a folder (or two selected folders) in the Explorer: Zovo Pro: Compare Two Folders of Workbooks.
+- Zovo Pro opens one pick: pay by card (USD 19), GitHub Sponsors, PayPal or a license key.
+- The rating ask follows the shared Zovo rule 2.3: at the earliest after two good comparisons at least 30 minutes apart, never after an error, at most twice.
+- "More free viewers" and the README list related Zovo extensions. A link opens the extension page; nothing installs on its own.
+
 ## 0.1.0
 
 - First release.

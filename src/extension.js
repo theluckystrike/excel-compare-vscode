@@ -12,6 +12,8 @@ const { buildHtml } = require('./html');
 const { createPro } = require('./pro');
 const { createRatingPrompt } = require('./rate');
 const { registerSupport, commandUris, showLinks } = require('./support');
+const { createReach, runAs } = require('./reach');
+const reachConfig = require('./reach-config');
 
 const EXT_ID = 'zovo.zovo-excel-compare';
 const PREFIX = 'excelCompare';
@@ -26,6 +28,7 @@ const SKIP_DIRS = new Set(['node_modules', '.git', '.svn', '.hg', '__pycache__',
 
 let rating = { success() {}, failure() {} };
 let pro;
+let reach = null; // REACH1 Pro row in the comparison toolbar + Explorer entry (src/reach.js)
 let ctx;
 const sessions = new Map(); // key -> Compare
 let active = null;
@@ -63,7 +66,7 @@ class Compare {
   open() {
     const media = vscode.Uri.joinPath(ctx.extensionUri, 'media');
     const panel = vscode.window.createWebviewPanel(VIEW_TYPE, this.title, vscode.ViewColumn.Active, {
-      enableScripts: true, enableCommandUris: commandUris(PREFIX), localResourceRoots: [media], retainContextWhenHidden: true,
+      enableScripts: true, enableCommandUris: rowCommandUris(), localResourceRoots: [media], retainContextWhenHidden: true,
     });
     panel.iconPath = vscode.Uri.joinPath(ctx.extensionUri, 'icon.png');
     panel.webview.html = buildHtml({
@@ -72,7 +75,9 @@ class Compare {
       styleUri: panel.webview.asWebviewUri(vscode.Uri.joinPath(media, 'main.css')).toString(),
       title: this.title,
       showSupportLinks: showLinks(vscode, PREFIX),
+      head: reach ? (n) => reach.headHtml(n) : undefined,
     });
+    if (reach) reach.attach(panel.webview, panel);
     this.panel = panel;
     active = this;
     panel.onDidChangeViewState(() => { if (panel.active) active = this; });
@@ -135,6 +140,7 @@ class Compare {
   }
   async onMessage(msg) {
     if (!msg || typeof msg.type !== 'string') return undefined;
+    if (reach && reach.onMessage(msg)) return undefined;
     switch (msg.type) {
       case 'ready': return this.run();
       case 'rows': {
@@ -156,7 +162,8 @@ class Compare {
         if (!side || side.bytes) return undefined;
         return vscode.commands.executeCommand('revealInExplorer', side.uri).then(undefined, () => undefined);
       }
-      case 'tool': return runTool(String(msg.tool), this, Number.isSafeInteger(msg.sheet) ? msg.sheet : undefined);
+      // the Pro buttons of the comparison toolbar: a card checkout from their Pro panel is tagged _toolbar
+      case 'tool': return runAs('toolbar', () => runTool(String(msg.tool), this, Number.isSafeInteger(msg.sheet) ? msg.sheet : undefined));
       case 'copy': return vscode.env.clipboard.writeText(String(msg.text || '').slice(0, 1 << 20)).then(() => vscode.window.setStatusBarMessage('Copied.', 3000));
       case 'settings': return vscode.commands.executeCommand('workbench.action.openSettings', `@ext:${EXT_ID}`);
       default: return undefined;
@@ -370,11 +377,12 @@ async function compareFolders(dirA, dirB) {
   if (!b) return; // cancelled: no try used
   const pairs = pairFolders(await listBooks(a.fsPath), await listBooks(b.fsPath));
   const media = vscode.Uri.joinPath(ctx.extensionUri, 'media');
-  const panel = vscode.window.createWebviewPanel(VIEW_TYPE + '.folders', `${baseName(a)} ↔ ${baseName(b)} (folders)`, vscode.ViewColumn.Active, { enableScripts: true, enableCommandUris: commandUris(PREFIX), localResourceRoots: [media], retainContextWhenHidden: true });
+  const panel = vscode.window.createWebviewPanel(VIEW_TYPE + '.folders', `${baseName(a)} ↔ ${baseName(b)} (folders)`, vscode.ViewColumn.Active, { enableScripts: true, enableCommandUris: rowCommandUris(), localResourceRoots: [media], retainContextWhenHidden: true });
+  if (reach) reach.attach(panel.webview, panel);
   folderPanels++;
   panel.iconPath = vscode.Uri.joinPath(ctx.extensionUri, 'icon.png');
   panel.webview.html = buildHtml({
-    cspSource: panel.webview.cspSource, title: panel.title, showSupportLinks: showLinks(vscode, PREFIX),
+    cspSource: panel.webview.cspSource, title: panel.title, showSupportLinks: showLinks(vscode, PREFIX), head: reach ? (n) => reach.headHtml(n) : undefined,
     scriptUri: panel.webview.asWebviewUri(vscode.Uri.joinPath(media, 'main.js')).toString(),
     styleUri: panel.webview.asWebviewUri(vscode.Uri.joinPath(media, 'main.css')).toString(),
   });
@@ -384,9 +392,10 @@ async function compareFolders(dirA, dirB) {
   const ready = new Promise((resolve) => {
     panel.webview.onDidReceiveMessage(async (m) => {
       if (!m) return;
+      if (reach && reach.onMessage(m)) return;
       if (m.type === 'ready') resolve();
       if (m.type === 'openPair') { const p = pairs[Number(m.index)]; if (p && p.a && p.b) await compare(fileSide(vscode.Uri.file(p.a)), fileSide(vscode.Uri.file(p.b))); }
-      if (m.type === 'tool') await runTool(String(m.tool), null);
+      if (m.type === 'tool') await runAs('toolbar', () => runTool(String(m.tool), null));
     });
   });
   panel.onDidDispose(() => { closed = true; });
@@ -414,7 +423,18 @@ async function compareFolders(dirA, dirB) {
   if (compared && !counted) { counted = true; await pro.produced('folders'); refreshPro(); }
 }
 
-function refreshPro() { for (const s of sessions.values()) s.post({ type: 'pro', pro: proState() }); }
+function refreshPro() {
+  for (const s of sessions.values()) s.post({ type: 'pro', pro: proState() });
+  if (reach) reach.refresh();
+}
+
+/** Command links the webviews may run: the support footer, the REACH1 row's tools and Get Zovo Pro. */
+function rowCommandUris() {
+  const base = commandUris(PREFIX);
+  const extra = reach ? reach.commandIds() : [];
+  if (!Array.isArray(base)) return base;
+  return [...new Set([...base, ...extra])];
+}
 
 // ---------------- activation ----------------
 
@@ -423,6 +443,11 @@ function activate(context) {
   rating = createRatingPrompt({ vscode, context, extensionId: EXT_ID, section: PREFIX, name: 'Excel Compare' });
   registerSupport({ vscode, context, prefix: PREFIX, selfId: EXT_ID });
   pro = createPro({ vscode, context });
+  // REACH1: a quiet Pro row in the comparison toolbar (and the folder summary): the 3 tools with their free tries, then
+  // Get Zovo Pro and a close button. Explorer: "Zovo Pro: Compare Two Folders of Workbooks" on folders. Nothing shows
+  // or runs at activation.
+  reach = createReach({ vscode, context, ...reachConfig, licensed: () => pro.licensed, shown: () => setting('showProTools', true) !== false });
+  reach.registerCtx();
   context.subscriptions.push(pro.onDidChange(() => refreshPro()));
   const reg = (id, fn) => context.subscriptions.push(vscode.commands.registerCommand(id, fn));
   reg(`${PREFIX}.compareSelected`, compareSelected);
@@ -434,13 +459,14 @@ function activate(context) {
     return compare(fileSide(s('budget-march.xlsx')), fileSide(s('budget-april.xlsx')));
   });
   reg(`${PREFIX}.openWalkthrough`, () => vscode.commands.executeCommand('workbench.action.openWalkthrough', `${EXT_ID}#${PREFIX}.start`, false));
-  reg(`${PREFIX}.exportReport`, () => exportReport(active));
-  reg(`${PREFIX}.matchByKey`, () => matchByKey(active));
-  reg(`${PREFIX}.compareFolders`, (uri, uris) => (Array.isArray(uris) && uris.length === 2 ? compareFolders(uris[0], uris[1]) : compareFolders()));
+  reg(`${PREFIX}.exportReport`, reach.wrap(() => exportReport(active)));
+  reg(`${PREFIX}.matchByKey`, reach.wrap(() => matchByKey(active)));
+  // Explorer: two selected folders compare at once; one folder is the first side and the second is picked
+  reg(`${PREFIX}.compareFolders`, reach.wrap((uri, uris) => (Array.isArray(uris) && uris.length === 2 ? compareFolders(uris[0], uris[1]) : uri && uri.fsPath ? compareFolders(uri) : compareFolders())));
   context.subscriptions.push(vscode.window.registerUriHandler({ handleUri: (uri) => pro.handleUri(uri) }));
   context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e) => { if (e.affectsConfiguration(`${PREFIX}.showProTools`)) refreshPro(); }));
 }
 
 function deactivate() {}
 
-module.exports = { activate, deactivate, pairFolders, listBooks, Compare, _sessions: sessions, _state: () => ({ active, folderPanels }) };
+module.exports = { activate, deactivate, pairFolders, listBooks, Compare, _sessions: sessions, _refreshPro: () => refreshPro(), _state: () => ({ active, folderPanels }) };

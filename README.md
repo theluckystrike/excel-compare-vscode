@@ -1,10 +1,17 @@
-# Excel Compare & XLSX Diff (Compare Excel Files, CSV Diff, Spreadsheet Compare)
+# Excel Compare & XLSX Diff
 
-Zovo Pro: USD 19 once, every Zovo tool. The diff report export, Match rows by key and Compare two folders are Pro, with 3 free tries each; comparing two files stays free.
-
-Excel compare for VS Code. Compare two Excel workbooks or CSV files cell by cell and see which rows were added or removed, which cells changed, and which sheets exist in only one file. Compare a workbook with its Git HEAD version before you commit.
+Excel compare for VS Code: compare two Excel workbooks or CSV files cell by cell and see which rows were added or removed, which cells changed, and which sheets exist in only one file. Compare a workbook with its Git HEAD version before you commit.
 
 ![Two budget workbooks compared: a changed amount in yellow with the old value struck through, an inserted row in green, a new Owner column](images/compare.png)
+
+Free, with no sign-in and no network:
+
+- Compare .xlsx, .xlsm, .xls, .ods, .csv and .tsv files in any mix, from the Explorer or the command palette.
+- Rows are lined up, columns are matched by header, sheets by name, so an inserted row or column shows as one change.
+- Next and Previous change across sheets, Values or Formulas, compare with Git HEAD.
+- Large files stay fast: the grid draws only the rows on screen, and reading runs in a worker with limits.
+
+Zovo Pro: USD 19 once, for the Pro tools in every Zovo extension. Export a diff report (XLSX, HTML or CSV), Match rows by key columns and Compare two folders of workbooks each have 3 free tries on this computer. A small Pro tools row in the comparison toolbar shows the tries left; its × hides it until VS Code restarts.
 
 ## How to compare
 
@@ -49,7 +56,7 @@ Three tools for regular comparison work. Each has 3 free tries on your computer;
 - Match rows by key columns: pick an ID column (or several) and rows are matched by their key instead of their position. Sorted or reordered sheets then compare cleanly, and moved rows are marked.
 - Compare two folders of workbooks: files are paired by name, every pair is compared, and a table shows which files are the same, which differ and which exist in only one folder. Any pair opens in the full view.
 
-The setting excelCompare.showProTools hides the three buttons.
+The setting excelCompare.showProTools hides the three buttons and the Pro tools row. Right-click a folder in the Explorer (or select two folders) and pick Zovo Pro: Compare Two Folders of Workbooks to start a folder comparison there.
 
 ## Privacy
 
@@ -64,10 +71,6 @@ Zovo extensions have no ads and no tracking. They are made by [theluckystrike](h
 - [Sponsor on GitHub](https://github.com/sponsors/theluckystrike)
 - [PayPal](https://www.paypal.com/paypalme/najzzz)
 - [Follow theluckystrike on GitHub](https://github.com/theluckystrike)
-
-### Need your format supported?
-
-Open a [format request](https://github.com/theluckystrike/excel-compare-vscode/issues/new?template=format-request.yml) with a sample file, and I reply there whether it can be done. For USD 299 once, through [this GitHub Sponsors tier](https://github.com/sponsors/theluckystrike/sponsorships?tier_id=679995), I add your file format or a missing feature to this extension, with tests, within 7 days.
 
 ## More tools by Zovo
 

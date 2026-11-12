@@ -5,6 +5,7 @@
 // uses one. Nothing about Pro shows on open or activation: the panel appears only after a click on a Pro tool with
 // no tries left.
 const { createLicense } = require('./license');
+const { withSurface } = require('./reach');
 
 const SKU = 'excel-compare-pro';
 const TRIAL_USES = 3;
@@ -40,7 +41,7 @@ function createPro({ vscode, context, license, prefix = 'excelCompare', productN
     if (licensed()) { if (lic.refresh) lic.refresh(); return true; }
     if (left(f) > 0) return true;
     const feat = FEATURES[f] || { title: 'This tool', detail: '' };
-    return !!(await lic.requirePro(feat.title, { detail: feat.detail, triesUsed: used(f), tools: TOOLS }));
+    return !!(await lic.requirePro(feat.title, withSurface({ detail: feat.detail, triesUsed: used(f), tools: TOOLS })));
   }
 
   /** After the tool produced its output: counts one free try (nothing when licensed). */

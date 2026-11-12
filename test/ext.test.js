@@ -248,3 +248,39 @@ test('showProTools off: the panel gets show=false; the CSP has a nonce and no un
   const h = buildHtml({ cspSource: 'vscode-resource:', scriptUri: 'a"b', styleUri: 's', title: '<x>' });
   assert.ok(h.includes('a&quot;b') && h.includes('&lt;x&gt;'));
 });
+
+test('REACH1: the Pro tools row is in the comparison page head with the tries left, its links are allowed, a close hides it, toolbar clicks are tagged', async () => {
+  const s = loadExtension();
+  try {
+    s.ext.activate(s.context);
+    const p = await openCompare(s, A, B);
+    const html = p.webview.html;
+    assert.match(html, /<script nonce="[A-Za-z0-9_-]+">\(function \(\) \{\n  var CLOSED_KEY/);
+    assert.ok(html.indexOf('zovo-reach1') < html.indexOf('main.js'), 'the row script runs before main.js (shared acquireVsCodeApi)');
+    for (const t of ['3 free tries', 'Export a Diff Report', 'Match Rows by Key Columns', 'Compare Two Folders of Workbooks', 'Get Zovo Pro']) assert.ok(html.includes(t), t);
+    assert.match(html, /"header\.top"/);
+    const allowed = p.options.enableCommandUris;
+    for (const c of ['excelCompare.exportReport', 'excelCompare.matchByKey', 'excelCompare.compareFolders', 'excelCompare.getPro']) assert.ok(allowed.includes(c), c);
+    // a free try used elsewhere updates the row in open panels
+    await s.state.set('excelCompare.proTrial', { report: 2 });
+    s.ext._refreshPro();
+    const row = p.posted.filter((m) => m.type === 'zovoReach1').at(-1);
+    assert.ok(row && /1 try left|1 tries left/.test(row.html), row && row.html);
+    // with no tries left, the toolbar's Pro button opens the panel; Pay by card carries <install id>_toolbar
+    await s.state.set('excelCompare.proTrial', { report: 3 });
+    s.ui.info.push('Pay by card (USD 19)');
+    await p.send({ type: 'tool', tool: 'report' });
+    assert.ok(s.log.external.some((u) => /license\.zovo\.one\/buy\/zovo-pro\?client_reference_id=[\w-]+_toolbar/.test(u)), s.log.external.join(' '));
+    await p.send({ type: 'zovoReach1Closed' });
+    assert.strictEqual(p.posted.filter((m) => m.type === 'zovoReach1').at(-1).html, '', 'closed for the session');
+  } finally { s.restore(); }
+});
+
+test('REACH1 and listing: one Explorer entry for the folder tool, name, description and tags', () => {
+  const pkg = require('../package.json');
+  const ex = pkg.contributes.menus['explorer/context'];
+  assert.deepStrictEqual(ex.filter((m) => m.command.startsWith('excelCompare.zovoPro.')), [{ command: 'excelCompare.zovoPro.folders', when: 'explorerResourceIsFolder && config.excelCompare.showProTools', group: 'zovoPro@1' }]);
+  assert.ok(!ex.some((m) => m.command === 'excelCompare.compareFolders'), 'one Explorer entry per tool');
+  assert.ok(pkg.displayName.length <= 30 && pkg.displayName.startsWith('Excel Compare') && pkg.description.toLowerCase().startsWith('excel compare'));
+  assert.deepStrictEqual(pkg.keywords, ['excel compare', 'excel diff', 'xlsx diff', 'compare excel', 'csv diff']);
+});

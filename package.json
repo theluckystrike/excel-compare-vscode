@@ -1,8 +1,8 @@
 {
   "name": "zovo-excel-compare",
-  "displayName": "Excel Compare & XLSX Diff (Compare Excel Files, CSV Diff, Spreadsheet Compare)",
+  "displayName": "Excel Compare & XLSX Diff",
   "description": "Excel compare for VS Code: compare two Excel files (.xlsx, .xlsm, .xls, .ods) or CSV files cell by cell. Inserted rows are aligned, changed cells are marked, and you can step from change to change or compare a file with its Git HEAD version. Values or formulas. No network.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "zovo",
   "license": "MIT",
   "icon": "icon.png",
@@ -28,30 +28,10 @@
   ],
   "keywords": [
     "excel compare",
-    "xlsx diff",
     "excel diff",
+    "xlsx diff",
     "compare excel",
-    "compare excel files",
-    "csv diff",
-    "csv compare",
-    "spreadsheet compare",
-    "spreadsheet diff",
-    "xlsx compare",
-    "excel diff viewer",
-    "excel compare tool",
-    "xlsx",
-    "excel",
-    "csv",
-    "diff",
-    "compare",
-    "git diff excel",
-    "ods",
-    "xls",
-    "workbook compare",
-    "table diff",
-    "data diff",
-    "row diff",
-    "cell diff"
+    "csv diff"
   ],
   "main": "./src/extension.js",
   "activationEvents": [],
@@ -150,6 +130,10 @@
         "command": "excelCompare.payByCard",
         "title": "Pay for Zovo Pro by card (USD 19)",
         "category": "Zovo Pro"
+      },
+      {
+        "command": "excelCompare.zovoPro.folders",
+        "title": "Zovo Pro: Compare Two Folders of Workbooks"
       }
     ],
     "menus": {
@@ -170,9 +154,9 @@
           "group": "3_compare@42"
         },
         {
-          "command": "excelCompare.compareFolders",
-          "when": "listMultiSelection && explorerResourceIsFolder && config.excelCompare.showProTools",
-          "group": "3_compare@43"
+          "command": "excelCompare.zovoPro.folders",
+          "when": "explorerResourceIsFolder && config.excelCompare.showProTools",
+          "group": "zovoPro@1"
         }
       ],
       "commandPalette": [
@@ -191,6 +175,10 @@
         {
           "command": "excelCompare.compareFolders",
           "when": "config.excelCompare.showProTools"
+        },
+        {
+          "command": "excelCompare.zovoPro.folders",
+          "when": "false"
         }
       ]
     },
@@ -214,7 +202,7 @@
         "excelCompare.showProTools": {
           "type": "boolean",
           "default": true,
-          "description": "Show the Export report, Match by key and Compare folders buttons (Zovo Pro tools, 3 free tries each). Turn off to hide them."
+          "description": "Show the Export report, Match by key and Compare folders buttons and the Pro tools row (Zovo Pro tools, 3 free tries each), and the Explorer folder entry. Turn off to hide them."
         },
         "excelCompare.showSupportLinks": {
           "type": "boolean",
@@ -224,7 +212,7 @@
         "excelCompare.askForRating": {
           "type": "boolean",
           "default": true,
-          "description": "Ask once, after a few days of use, whether you want to rate the extension. Never after an error."
+          "description": "Ask whether you want to rate the extension, at the earliest after two good comparisons at least 30 minutes apart, at most twice. Never after an error."
         }
       }
     },
