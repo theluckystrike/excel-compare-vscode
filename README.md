@@ -13,6 +13,8 @@ Free, with no sign-in and no network:
 
 Zovo Pro: USD 19 once, for the Pro tools in every Zovo extension. Export a diff report (XLSX, HTML or CSV), Match rows by key columns and Compare two folders of workbooks each have 3 free tries on this computer. A small Pro tools row in the comparison toolbar shows the tries left; its × hides it until VS Code restarts.
 
+![Two budget workbooks compared in VS Code 1.142: the Pro tools row under the toolbar buttons shows 3 free tries for each tool and Get Zovo Pro.](images/compare-pro-row.png)
+
 ## How to compare
 
 - Select two files in the Explorer, right-click and pick Compare Selected Excel Files.
